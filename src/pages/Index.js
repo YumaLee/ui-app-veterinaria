@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Input, Form, Typography, Divider, Layout, Button } from 'antd';
 
-const { Title } = Typography;
+const { Title,Text } = Typography;
 const { Header, Footer, Sider, Content } = Layout;
 
 class FormModal extends React.Component {
@@ -33,8 +33,13 @@ class FormModal extends React.Component {
 
                 <Card style={{ width: 500 }}>
                   <div style={{ display: "flex", justifyContent: "center" }}>
-                    <Title level={4} >Encuentra y reserva los mejores cuidados para tu mascota </Title>
+                    <Title level={3} >Encuentra y reserva los mejores cuidados para tu mascota
+                     <br/>
+                     Una plataforma pensada para facilitarle la vida a tu mascota
+                    </Title>
                   </div>
+          
+          
                   <div className="text-center">
                     <img
                       className="image-portal"

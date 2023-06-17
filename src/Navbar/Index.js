@@ -24,7 +24,14 @@ class Navbar extends Component {
 		return (
 			<nav className="menuBar">
 				<div className="logo">
-					<a href="">logo</a>
+				<div className="text-center">
+                    <img
+                      className="image-portal"
+                      src="https://www.petsnvets.es/_next/image?url=%2Flogo.png&w=384&q=75"
+                      alt="logo"
+                      style={{ width: '150px' }}
+                    />
+                  </div>
 				</div>
 				<div className="menuCon">
 					<div className="leftMenu">
