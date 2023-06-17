@@ -22,7 +22,7 @@ class Navbar extends Component {
 
 	render() {
 		return (
-			<nav className="menuBar">
+			<nav className="menuBar" style={{overflow: 'hidden'}}>
 				<div className="logo">
 				<div className="text-center">
                     <img
