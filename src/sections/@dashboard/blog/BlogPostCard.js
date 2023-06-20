@@ -56,7 +56,7 @@ BlogPostCard.propTypes = {
   index: PropTypes.number,
 };
 
-export default function BlogPostCard({ post, index }) {
+export default function BlogPostCard({ post, index, open }) {
   const { cover, title, view, comment, share, author, createdAt } = post;
   const latestPostLarge = index === 0;
   const latestPost = index === 1 || index === 2;
@@ -64,12 +64,11 @@ export default function BlogPostCard({ post, index }) {
   const POST_INFO = [
     { number: comment, icon: 'eva:message-circle-fill' },
     { number: view, icon: 'eva:eye-fill' },
-    { number: share, icon: 'eva:share-fill' },
   ];
 
   return (
     <Grid item xs={12} sm={latestPostLarge ? 12 : 6} md={latestPostLarge ? 6 : 3}>
-      <Card sx={{ position: 'relative' }}>
+      <Card sx={{ position: 'relative' }} onClick={() => open(post)}  >
         <StyledCardMedia
           sx={{
             ...((latestPostLarge || latestPost) && {
@@ -123,6 +122,7 @@ export default function BlogPostCard({ post, index }) {
 
         <CardContent
           sx={{
+
             pt: 4,
             ...((latestPostLarge || latestPost) && {
               bottom: 0,
@@ -132,9 +132,11 @@ export default function BlogPostCard({ post, index }) {
           }}
         >
           <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
-            {fDate(createdAt)}
+            {'Cerrado'}
           </Typography>
-
+          <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
+            {'C.d Almeria, 21, 2do,1ra, 08014 Barcelona'}
+          </Typography>
           <StyledTitle
             color="inherit"
             variant="subtitle2"
@@ -150,22 +152,26 @@ export default function BlogPostCard({ post, index }) {
           </StyledTitle>
 
           <StyledInfo>
-            {POST_INFO.map((info, index) => (
-              <Box
-                key={index}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  ml: index === 0 ? 0 : 1.5,
-                  ...((latestPostLarge || latestPost) && {
-                    color: 'grey.500',
-                  }),
-                }}
-              >
-                <Iconify icon={info.icon} sx={{ width: 16, height: 16, mr: 0.5 }} />
-                <Typography variant="caption">{fShortenNumber(info.number)}</Typography>
-              </Box>
-            ))}
+
+            <Box
+              key={index}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                ml: index === 0 ? 0 : 1.5,
+                ...((latestPostLarge || latestPost) && {
+                  color: 'grey.500',
+                }),
+              }}
+            >
+              <div style={{ justifyContent: 'space-between', display: 'flex', }}>
+                <Typography variant="caption">{'Contacto'} </Typography>
+
+              </div>
+
+            </Box>
+
           </StyledInfo>
         </CardContent>
       </Card>

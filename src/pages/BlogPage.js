@@ -81,6 +81,11 @@ const estrellasfilter = [
   },
 
 ];
+
+const openInformation = (data) => {
+
+  alert(JSON.stringify(data))
+}
 // ----------------------------------------------------------------------
 
 export default function BlogPage() {
@@ -146,7 +151,7 @@ export default function BlogPage() {
 
         <Grid container spacing={3}>
           {POSTS.map((post, index) => (
-            <BlogPostCard key={post.id} post={post} index={index} />
+            <BlogPostCard key={post.id} post={post} index={index} open ={openInformation} />
           ))}
         </Grid>
       </Container>
