@@ -10,6 +10,8 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import Home from './pages/Home';
+import UserRegisterPage from './pages/UserRegisterPage';
+import AdminManageVetPage from './pages/AdminManageVetPage';
 
 // ----------------------------------------------------------------------
 
@@ -27,7 +29,12 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
+        { path: 'admin_vet',  element: <AdminManageVetPage /> },
       ],
+    },
+    {
+      path: 'registration',
+      element: <UserRegisterPage />
     },
     {
       path: 'login',
