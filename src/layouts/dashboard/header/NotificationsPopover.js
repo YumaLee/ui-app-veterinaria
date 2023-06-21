@@ -173,7 +173,7 @@ export default function NotificationsPopover() {
 
         <Box sx={{ p: 1 }}>
           <Button fullWidth disableRipple>
-            View All
+            Ver todo
           </Button>
         </Box>
       </Popover>
