@@ -1,23 +1,23 @@
-import { ERP } from './_base/endpoint';
+/* eslint-disable new-cap */
 import axios from 'axios';
+import { ERP } from './_base/endpoint';
+
 
 class homeService {
 
-    /******* QUERIES ******/
-
-    async listar() {
+  
+/*     async listar(data) { 
         const response = await axios
-            .get(`${ERP}home/lista`)
+            .post(`${ERP}search-by-name`, data)
             .then(response => {
-                return response.data;
+                return response;
             })
             .catch(error => {
                 console.log(error);
+                return error.response ? error.response : {};
             });
         return response;
-    };
-
-    /******* TRANSACCIONES ******/
+    } */
 
 
 }

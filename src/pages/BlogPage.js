@@ -1,4 +1,8 @@
+import { useState } from 'react';
+
 import { Helmet } from 'react-helmet-async';
+import {useLocation} from 'react-router-dom';
+
 // @mui
 import { Grid, Button, Container, Stack, Typography, Link, TextField, MenuItem } from '@mui/material';
 // components
@@ -87,8 +91,18 @@ const openInformation = (data) => {
   alert(JSON.stringify(data))
 }
 // ----------------------------------------------------------------------
-
+console.log(POSTS)
 export default function BlogPage() {
+
+  const location = useLocation();
+  const [item, setItem] = useState(location);
+  console.log(location);
+  console.log(item)
+
+
+
+
+
   return (
     <>
       <Helmet>
