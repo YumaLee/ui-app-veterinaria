@@ -56,8 +56,8 @@ BlogPostCard.propTypes = {
   index: PropTypes.number,
 };
 
-export default function BlogPostCard({ post, index, open }) {
-  const { cover, title, view, comment, share, author, createdAt } = post;
+export default function BlogPostCard({ post, index, open,author }) {
+  const { imageUrl, name, view, comment, phoneNumber, address } = post;
   const latestPostLarge = index === 0;
   const latestPost = index === 1 || index === 2;
 
@@ -68,7 +68,7 @@ export default function BlogPostCard({ post, index, open }) {
 
   return (
     <Grid item xs={12} sm={latestPostLarge ? 12 : 6} md={latestPostLarge ? 6 : 3}>
-      <Card sx={{ position: 'relative' }} onClick={() => open(post)}  >
+      <Card sx={{ position: 'relative' }} onClick={() => open(post.vetServices)}  >
         <StyledCardMedia
           sx={{
             ...((latestPostLarge || latestPost) && {
@@ -117,7 +117,7 @@ export default function BlogPostCard({ post, index, open }) {
             }}
           />
 
-          <StyledCover alt={title} src={cover} />
+          <StyledCover alt={name} src={imageUrl} />
         </StyledCardMedia>
 
         <CardContent
@@ -135,7 +135,7 @@ export default function BlogPostCard({ post, index, open }) {
             {'Cerrado'}
           </Typography>
           <Typography gutterBottom variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
-            {'C.d Almeria, 21, 2do,1ra, 08014 Barcelona'}
+            {address}
           </Typography>
           <StyledTitle
             color="inherit"
@@ -148,7 +148,7 @@ export default function BlogPostCard({ post, index, open }) {
               }),
             }}
           >
-            {title}
+            {name}
           </StyledTitle>
 
           <StyledInfo>
@@ -166,7 +166,7 @@ export default function BlogPostCard({ post, index, open }) {
               }}
             >
               <div style={{ justifyContent: 'space-between', display: 'flex', }}>
-                <Typography variant="caption">{'Contacto'} </Typography>
+                <Typography variant="caption">{'Contacto:'} {phoneNumber}</Typography>
 
               </div>
 

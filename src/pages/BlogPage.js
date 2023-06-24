@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { Helmet } from 'react-helmet-async';
-import {useLocation} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // @mui
 import { Grid, Button, Container, Stack, Typography, Link, TextField, MenuItem } from '@mui/material';
@@ -12,12 +12,11 @@ import { BlogPostCard, BlogPostsSort, BlogPostsSearch } from '../sections/@dashb
 import POSTS from '../_mock/blog';
 
 // ----------------------------------------------------------------------
+const author = {
+  name: 'holaa',
+  avatarUrl: `/assets/images/avatars/avatar_${1}.jpg`,
+};
 
-const SORT_OPTIONS = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'popular', label: 'Popular' },
-  { value: 'oldest', label: 'Oldest' },
-];
 
 const parafilter = [
   {
@@ -86,21 +85,24 @@ const estrellasfilter = [
 
 ];
 
-const openInformation = (data) => {
-
-  alert(JSON.stringify(data))
-}
 // ----------------------------------------------------------------------
 console.log(POSTS)
 export default function BlogPage() {
 
+  const navigate = useNavigate();
   const location = useLocation();
-  const [item, setItem] = useState(location);
+  const [dataItems, setDataItems] = useState(location.state);
   console.log(location);
-  console.log(item)
+  console.log(dataItems)
 
 
+  const openInformation = (data) => {
+    const newDta = dataItems;
+    newDta.detalle = data;
 
+    navigate('/details', { state: newDta});
+
+  }
 
 
   return (
@@ -122,7 +124,7 @@ export default function BlogPage() {
         </Stack>
 
         <Stack mb={5} direction="row" alignItems="center" justifyContent="space-between">
-          <BlogPostsSearch posts={POSTS} />
+          <BlogPostsSearch posts={dataItems.items} />
           <Stack spacing={3}>
             <TextField name="buscar" label="" placeholder="Categoria" sx={{ width: 180 }}
               select >
@@ -153,7 +155,7 @@ export default function BlogPage() {
             </TextField>
           </Stack>
           <Stack spacing={3}>
-            <TextField name="buscar" label="" placeholder="Estrellas"  sx={{ width: 180 }} select>
+            <TextField name="buscar" label="" placeholder="Estrellas" sx={{ width: 180 }} select>
               {estrellasfilter.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
@@ -164,8 +166,15 @@ export default function BlogPage() {
         </Stack>
 
         <Grid container spacing={3}>
-          {POSTS.map((post, index) => (
-            <BlogPostCard key={post.id} post={post} index={index} open ={openInformation} />
+          {dataItems.items.map((post, index) => (
+            <BlogPostCard
+              key={post.idVet}
+              post={post}
+              index={index}
+              open={openInformation}
+              author={author}
+
+            />
           ))}
         </Grid>
       </Container>

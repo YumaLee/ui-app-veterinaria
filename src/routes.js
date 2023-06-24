@@ -12,6 +12,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import Home from './pages/Home';
 import UserRegisterPage from './pages/UserRegisterPage';
 import AdminManageVetPage from './pages/AdminManageVetPage';
+import Details from './pages/DetailsVet';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,10 @@ export default function Router() {
     {
       path: 'blog',
       element: <BlogPage />,
+    },
+    {
+      path: 'details',
+      element: <Details />,
     },
     {
       element: <SimpleLayout />,

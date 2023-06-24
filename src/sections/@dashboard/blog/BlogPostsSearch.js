@@ -26,8 +26,8 @@ export default function BlogPostsSearch({ posts }) {
       popupIcon={null}
       PopperComponent={StyledPopper}
       options={posts}
-      getOptionLabel={(post) => post.title}
-      isOptionEqualToValue={(option, value) => option.id === value.id}
+      getOptionLabel={(post) => post.name}
+      isOptionEqualToValue={(option, value) => option.idVet === value.idVet}
       renderInput={(params) => (
         <TextField
           {...params}
