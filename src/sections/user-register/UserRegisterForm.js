@@ -54,12 +54,9 @@ export default function UserRegisterForm() {
         }
       });
       
-      console.log('responseUserRegister')
-      console.log(responseUserRegister)
-      console.log('responseUserRegister')
-
       if(responseUserRegister.status === 201){
         SweetAlertMessage('Registrar Usuario', 'Usuario Registrado', 'success', '/login');
+        cleanForm();
       } else {
         Swal.fire({
           title: 'Registrar Usuario',
@@ -74,7 +71,6 @@ export default function UserRegisterForm() {
         if (error.response && error.response.status === 409) {
           // El código de estado de la respuesta es 409 (Conflict)
           // Maneja el caso de conflicto aquí
-          console.log(errorMessage);
           Swal.fire({
             title: 'Registrar Usuario',
             text: errorMessage.detail,
@@ -87,7 +83,6 @@ export default function UserRegisterForm() {
             text: errorMessage.title,
             icon: 'error',
           });
-          console.error(errorMessage);
         }
     }
   };
