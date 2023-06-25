@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box } from '@mui/material';
 import swal from 'sweetalert';
+import Iconify from '../../../../components/iconify';
 
 const ImagePreview = ({ imageUrl }) => (
   <div style={{ maxWidth: '200px', marginTop: '10px' }}>
@@ -87,7 +88,17 @@ export default function AddVetForm() {
 
   return (
     <div>
-      <Button variant="contained" onClick={handleOpen}>Abrir formulario</Button>
+      <Box justifyContent="space-between">
+        <Button onClick={handleOpen} variant="contained" color='primary' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          Nuevo
+        </Button>
+        <Button variant="contained" color='warning' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:edit-fill" />}>
+          Modificar
+        </Button>
+        <Button variant="contained" color='error' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:trash-fill" />}>
+          Eliminar
+        </Button>
+      </Box>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>Agregar veterinaria</DialogTitle>
         <DialogContent>
