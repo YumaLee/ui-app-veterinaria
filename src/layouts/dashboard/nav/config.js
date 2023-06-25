@@ -42,6 +42,16 @@ const navConfig = [
     path: '/home',
     icon: icon('ic_lock'),
   },
+  {
+    title: 'Regístrate',
+    path: '/registration',
+    icon: icon('ic_clients'),
+  },
+  {
+    title: 'Gestión Veterinarias',
+    path: '/dashboard/admin_vet',
+    icon: icon('ic_vet'),
+  },
 ];
 
 export default navConfig;
