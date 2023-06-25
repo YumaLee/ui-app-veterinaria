@@ -1,87 +1,230 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../components/iconify';
 
+export const ERP = "https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/";
 // ----------------------------------------------------------------------
-
 export default function UserRegisterForm() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const responseProvinces = await axios.get(`${ERP}ubigeo/provinces`);
+        const provincesData = responseProvinces.data;
 
-  const handleClick = () => {
-    navigate('/login', { replace: true });
+        // Filtrar la lista de la provincia de Lima
+        const filteredProvinces = provincesData.filter(
+          (province) => province.idProvince === '1501'
+        );
+        
+        const responseDistricts = await axios.get(`${ERP}ubigeo/districts`);
+        const districtsData = responseDistricts.data;
+
+        // Filtrar la lista de los distritos de Lima
+        const filteredDistricts = districtsData.filter(
+          (district) => district.idProvince === '1501'
+        );
+
+        setProvinces(filteredProvinces);
+        setDistricts(filteredDistricts);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  const fetchUserRegister = async (userData) => {
+    try {
+      const responseUserRegister = await axios.post(`${ERP}clients`, JSON.stringify(userData), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('responseUserRegister')
+      console.log(responseUserRegister)
+      console.log('responseUserRegister')
+
+      if(responseUserRegister.status === 201){
+        SweetAlertMessage('Registrar Usuario', 'Usuario Registrado', 'success', '/login');
+      } else {
+        Swal.fire({
+          title: 'Registrar Usuario',
+          text: 'No se ha podido guardar su información',
+          icon: 'warning',
+        });
+      }
+    } catch (error) {
+        // Manejar errores
+        const errorMessage = error.response.data;
+
+        if (error.response && error.response.status === 409) {
+          // El código de estado de la respuesta es 409 (Conflict)
+          // Maneja el caso de conflicto aquí
+          console.log(errorMessage);
+          Swal.fire({
+            title: 'Registrar Usuario',
+            text: errorMessage.detail,
+            icon: 'error',
+          });
+        } else {
+          // Maneja otros errores de red u otras excepciones aquí
+          Swal.fire({
+            title: 'Registrar Usuario',
+            text: errorMessage.title,
+            icon: 'error',
+          });
+          console.error(errorMessage);
+        }
+    }
   };
 
-  const provinces = ['Provincia 1', 'Provincia 2', 'Provincia 3'];
-  const districts = ['Distrito 1', 'Distrito 2', 'Distrito 3'];
-  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    phoneNumber: '',
     province: '',
     district: '',
     address: '',
     password: '',
   });
 
-  const [formErrors, setFormErrors] = useState({
-    firstName: false,
-    lastName: false,
-    email: false,
-    province: false,
-    district: false,
-    address: false,
-    password: false,
-  });
+  const [formErrors, setFormErrors] = useState({});
+  
+  const cleanForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      province: '',
+      district: '',
+      address: '',
+      password: '',
+    });
+  }
 
+  const SweetAlertMessage = (title, message, type, link) => {
+    Swal.fire({
+      title,
+      text: message,
+      icon: type,
+      allowOutsideClick: false,
+      showCancelButton: true,
+      confirmButtonText: 'Ir a Inicio de Sesión',
+      cancelButtonText: 'Salir',
+      showCloseButton: true,
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        navigate(link, { replace: true });
+      },
+    }).then((result) => {
+      if (result.dismiss === Swal.DismissReason.close) {
+        // Código para manejar el cierre del diálogo
+      } else if (result.isConfirmed) {
+        // Código para manejar el clic en "Aceptar"
+      } else if (result.isDenied) {
+        // Código para manejar el clic en "Cancelar"
+      }
+    });
+  };
+  
   const handleChange = (event) => {
+    const { name, value } = event.target;
+
     setFormData({ ...formData, [event.target.name]: event.target.value });
-    setFormErrors({ ...formErrors, [event.target.name]: false });
+    setFormErrors({});
+  };
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidPhoneNumber = (phoneNumber) => {
+    const phoneNumberRegex = /^\+?(\d{1,3})?(\d{9})$/;
+    return phoneNumberRegex.test(phoneNumber);
+  };
+  
+  
+  const handleKeyDown = (event) => {
+    if (event.target.name === 'firstName' || event.target.name === 'lastName') {
+      const keyPressed = event.key;
+      const value = event.target.value;
+      const regex = /^[a-zA-Z\s]*$/; // Expresión regular para letras y espacios
+  
+      // Verificar si se presionó un espacio al inicio del texto
+      if (keyPressed === ' ' && value.trim() === '') {
+        event.preventDefault();
+      }
+  
+      // Verificar si se presionó un carácter no válido
+      if (!regex.test(keyPressed)) {
+        event.preventDefault();
+      }
+    }
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-  
+
     // Validar campos requeridos
     let hasErrors = false;
     const newFormErrors = {};
   
     Object.keys(formData).forEach((key) => {
       if (formData[key] === '') {
-        newFormErrors[key] = true;
+        newFormErrors[key] = 'Campo obligatorio.';
         hasErrors = true;
       }
     });
-  
-    setFormErrors(newFormErrors);
-  
-    if (hasErrors) {
-      return;
+
+    if (!isValidEmail(formData.email)) {
+      newFormErrors.email = 'El correo electrónico no es válido.';
+      hasErrors = true;
     }
 
-    // Mostrar modal de éxito
-    setSuccessModalOpen(true);
-    // Limpiar el formulario
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      province: '',
-      district: '',
-      address: '',
-      password: '',
-    });
-  };
+    if (!isValidPhoneNumber(formData.phoneNumber)) {
+      newFormErrors.phoneNumber = 'El número de télefono no tiene el formato válido.';
+      hasErrors = true;
+    }
+    
+    if (hasErrors) {
+      setFormErrors(newFormErrors);
+      return;
+    }
+    
+    const userData = {
+      "phoneNumber": formData.phoneNumber,
+      "user": {
+        "password": formData.password,
+        "firstName": formData.firstName,
+        "lastName": formData.lastName,
+        "email": formData.email
+      },
+      "address": {
+        "direction": formData.address,
+        "district": {
+          "idDistrict": formData.district
+        }
+      }
+    };
 
-  const handleCloseModal = () => {
-    setSuccessModalOpen(false);
+    fetchUserRegister(userData);
   };
 
   return (
@@ -96,6 +239,7 @@ export default function UserRegisterForm() {
           name="firstName"
           value={formData.firstName}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           fullWidth
           required
           inputProps={{ maxLength: 100 }}
@@ -108,9 +252,10 @@ export default function UserRegisterForm() {
           name="lastName"
           value={formData.lastName}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           fullWidth
           required
-          inputProps={{ maxLength: 100 }}
+          inputProps={{ maxLength: 10 }}
           error={formErrors.lastName}
           helperText={formErrors.lastName && 'Campo obligatorio'}
           style={{ marginBottom: '20px' }}
@@ -125,7 +270,19 @@ export default function UserRegisterForm() {
           required
           inputProps={{ maxLength: 100 }}
           error={formErrors.email}
-          helperText={formErrors.email && 'Campo obligatorio'}
+          helperText={formErrors.email && 'El correo electrónico no es válido.'}
+          style={{ marginBottom: '20px' }}
+        />
+        <TextField
+          label="Teléfono"
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+          fullWidth
+          required
+          inputProps={{ maxLength: 15, inputMode: 'tel' }}
+          error={formErrors.phoneNumber}
+          helperText={formErrors.phoneNumber && 'El número de télefono no tiene el formato válido.'}
           style={{ marginBottom: '20px' }}
         />
         <FormControl fullWidth required style={{ marginBottom: '20px' }}>
@@ -137,8 +294,8 @@ export default function UserRegisterForm() {
             error={formErrors.province}
           >
             {provinces.map((province) => (
-              <MenuItem key={province} value={province}>
-                {province}
+              <MenuItem key={province.idProvince} value={province.idProvince}>
+                {province.name}
               </MenuItem>
             ))}
           </Select>
@@ -153,8 +310,8 @@ export default function UserRegisterForm() {
             error={formErrors.district}
           >
             {districts.map((district) => (
-              <MenuItem key={district} value={district}>
-                {district}
+              <MenuItem key={district.idDistrict} value={district.idDistrict}>
+                {district.name}
               </MenuItem>
             ))}
           </Select>
@@ -198,23 +355,12 @@ export default function UserRegisterForm() {
           <Link to="/login" component={RouterLink} underline="hover">
             Ya tengo una cuenta
           </Link>
-        </Stack>  
+        </Stack>
         <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleSubmit}>
         Registrarse
         </LoadingButton>
       </form>
       </Stack>
-      <Dialog open={successModalOpen} onClose={handleCloseModal}>
-        <DialogTitle>¡Registro exitoso!</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">Tu registro ha sido exitoso, ahora puedes iniciar sesión. ¡Bienvenido!</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClick} color="primary">
-            Iniciar Sesión
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }
