@@ -113,7 +113,7 @@ export default function BlogPage() {
 
       <Container maxWidth={1100}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" marginTop={5} mb={5}>
-          <Link variant="subtitle2" href="/home">Inicio</Link>
+          <Link variant="subtitle2" href="/dashboard/home">Inicio</Link>
 
           <Typography variant="h5" gutterBottom>
             Veterinarios

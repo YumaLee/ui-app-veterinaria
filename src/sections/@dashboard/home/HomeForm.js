@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import Swal from 'sweetalert2';
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
@@ -25,20 +25,25 @@ export default function HomeForm() {
         valor.search = {
             name: nombre
         }
-        const response = await axios
-            .post(`${ERP}search-by-name`, valor)
-            .then(response => {
-                return response;
-            })
-            .catch(error => {
-                console.log(error);
-                return error.response ? error.response : {};
-            });
-        if (response.status === 200) {
-            navigate('/blog', { state: response.data });
-
+        if (nombre === "" || nombre === null) {
+            Swal.fire('ingrese nombre de veterinaria');
         } else {
-            console.log(response)
+
+            const response = await axios
+                .post(`${ERP}search-by-name`, valor)
+                .then(response => {
+                    return response;
+                })
+                .catch(error => {
+                    console.log(error);
+                    return error.response ? error.response : {};
+                });
+            if (response.status === 200) {
+                navigate('/blog', { state: response.data });
+
+            } else {
+                console.log(response)
+            }
 
         }
     };
@@ -54,6 +59,7 @@ export default function HomeForm() {
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     placeholder="Ingresar el nombre de veterinaria o servicio" />
+
             </Stack>
             <br />
             <br />

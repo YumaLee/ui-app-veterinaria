@@ -45,7 +45,7 @@ console.log(location.state)
                     <Grid item xs={12} md={6} lg={4}>
                         <AppNewsUpdate
                             title="Veterinaria Pablito"
-                            list={[...Array(5)].map((_, index) => ({
+                            list={[...Array(3)].map((_, index) => ({
                                 id: faker.datatype.uuid(),
                                 title: faker.name.jobTitle(),
                                 description: faker.name.jobTitle(),
