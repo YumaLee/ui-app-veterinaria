@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { useLocation } from 'react-router-dom';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@mui/material';
@@ -36,15 +39,28 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
+  const [usuarioData, setUsuarioData] = useState({});
 
   const isDesktop = useResponsive('up', 'lg');
+
 
   useEffect(() => {
     if (openNav) {
       onCloseNav();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+    // declare the data fetching function
+    const fetchData = async () => {
+      const data = await AsyncStorage.getItem('usuario');
+      console.log(data);
+      setUsuarioData(JSON.parse(data));
+
+    }
+    // call the function
+    fetchData()
+      // make sure to catch any error
+      .catch(console.error);
+  }, [pathname])
+
 
   const renderContent = (
     <Scrollbar
@@ -56,25 +72,26 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
         <Logo />
       </Box>
+      {usuarioData == null ? null :
 
-      <Box sx={{ mb: 5, mx: 2.5 }}>
-        <Link underline="none">
-          <StyledAccount>
-            <Avatar src={account.photoURL} alt="photoURL" />
+        <Box sx={{ mb: 5, mx: 2.5 }}>
+          <Link underline="none">
+            <StyledAccount>
+              <Avatar src={account.photoURL} alt="photoURL" />
 
-            <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
-              </Typography>
+              <Box sx={{ ml: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
+                  {usuarioData.firstName}  {usuarioData.lastName}
+                </Typography>
 
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {account.role}
-              </Typography>
-            </Box>
-          </StyledAccount>
-        </Link>
-      </Box>
-
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  {usuarioData.email}
+                </Typography>
+              </Box>
+            </StyledAccount>
+          </Link>
+        </Box>
+      }
       <NavSection data={navConfig} />
 
       <Box sx={{ flexGrow: 1 }} />
@@ -93,11 +110,11 @@ export default function Nav({ openNav, onCloseNav }) {
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-             .
+              .
             </Typography>
           </Box>
 
-    
+
         </Stack>
       </Box>
     </Scrollbar>
