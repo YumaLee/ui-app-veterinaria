@@ -1,15 +1,9 @@
 // Adecualo aqui la captura del value del autocomplete, ya que el valor del id se enviara al endpoint no el label
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Autocomplete, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Autocomplete, FormControl, InputLabel, Select, MenuItem, Chip, Typography } from '@mui/material';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Iconify from '../../../../components/iconify';
-
-const ImagePreview = ({ imageUrl }) => (
-  <div style={{ maxWidth: '200px', marginTop: '10px' }}>
-    <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%' }} />
-  </div>
-);
 
 export const ERP = "https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/";
 
@@ -17,6 +11,8 @@ export default function AddVetForm() {
   const [open, setOpen] = useState(false);
   const [speciesOptions, setSpeciesOptions] = useState([]);
   const [selectedSpecies, setSelectedSpecies] = useState([]);
+  const [servicesOptions, setServicesOptions] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   
@@ -30,6 +26,20 @@ export default function AddVetForm() {
           value: species.idSpecie,
         }));
         setSpeciesOptions(options);
+      })
+      .catch((error) => {
+        console.error('Error al obtener los datos:', error);
+      });
+    
+    fetch(`${ERP}vet-services`)
+      .then((response) => response.json())
+      .then((data) => {
+        // Mapear los datos del endpoint para obtener las opciones del Autocomplete
+        const options = data.map((services) => ({
+          label: services.name,
+          value: services.idVetService,
+        }));
+        setServicesOptions(options);
       })
       .catch((error) => {
         console.error('Error al obtener los datos:', error);
@@ -73,19 +83,11 @@ export default function AddVetForm() {
       });
       
       if(responseUserRegister.status === 201){
-        Swal.fire({
-          title: 'Registrar Veterinaria',
-          text: 'Veterinaria Registrada. La veterinaria se ha guardado correctamente.',
-          icon: 'success',
-        });
+        sweetAlert('Registrar Veterinaria', 'Veterinaria Registrada. La veterinaria se ha guardado correctamente.', 'success');
         // Limpiar el formulario
         cleanForm();
       } else {
-        Swal.fire({
-          title: 'Registrar Usuario',
-          text: 'No se ha podido guardar su información',
-          icon: 'warning',
-        });
+        sweetAlert('Registrar Veterinaria', 'No se ha podido guardar su información', 'warning');
       }
     } catch (error) {
         // Manejar errores
@@ -93,19 +95,10 @@ export default function AddVetForm() {
 
         if (error.response && error.response.status === 409) {
           // El código de estado de la respuesta es 409 (Conflict)
-          // Maneja el caso de conflicto aquí
-          Swal.fire({
-            title: 'Registrar Usuario',
-            text: errorMessage.detail,
-            icon: 'error',
-          });
+          sweetAlert('Registrar Veterinaria', errorMessage.detail, 'error');
         } else {
           // Maneja otros errores de red u otras excepciones aquí
-          Swal.fire({
-            title: 'Registrar Usuario',
-            text: errorMessage.title,
-            icon: 'error',
-          });
+          sweetAlert('Registrar Veterinaria', errorMessage.title, 'error');
         }
     }
   };
@@ -148,7 +141,7 @@ export default function AddVetForm() {
     vetDescription: '',
     vetDistrict: null,
     vetProvince: null,
-    vetImage: null,
+    vetImage: '',
     submitClicked: false,
   });
 
@@ -168,14 +161,6 @@ export default function AddVetForm() {
     }));
   };
 
-  const handleImageChange = (event) => {
-    const imageFile = event.target.files[0];
-    setVetData((prevState) => ({
-      ...prevState,
-      vetImage: URL.createObjectURL(imageFile),
-    }));
-  };
-
   const handleSubmit = () => {
     const formDataValues = Object.values(vetData);
     const hasErrors = formDataValues.some((value) => value === '');
@@ -190,7 +175,7 @@ export default function AddVetForm() {
       return;
     }
 
-    if (vetData.vetImage === null) {
+    if (vetData.vetImage === '') {
       sweetAlert('Error', 'Por favor, selecciona una imagen.', 'error');
       return;
     }
@@ -199,8 +184,17 @@ export default function AddVetForm() {
       sweetAlert('Error', 'Por favor, selecciona al menos una especie.', 'error');
       return;
     }
+
+    if (!isValidPhoneNumber(vetData.vetPhone)) {
+      sweetAlert('Error', 'Por favor, el número de télefono no tiene el formato válido.', 'error');
+      return;
+    }
     
-    const vetServices = selectedSpecies.map((option) => ({
+    const vetSpecies = selectedSpecies.map((option) => ({
+      idSpecie: option.value,
+    }));
+
+    const vetServices = selectedServices.map((option) => ({
       idVetService: option.value,
     }));
 
@@ -210,6 +204,7 @@ export default function AddVetForm() {
       "address": vetData.vetAddress,
       "imageUrl": vetData.vetImage,
       "phoneNumber": vetData.vetPhone,
+      "species": vetSpecies,
       "vetServices": vetServices,
       "district": {
         "idDistrict": vetData.vetDistrict
@@ -236,7 +231,7 @@ export default function AddVetForm() {
       vetDescription: '',
       vetDistrict: null,
       vetProvince: null,
-      vetImage: null,
+      vetImage: '',
       submitClicked: false,
     });
     setSelectedSpecies([]);
@@ -247,10 +242,25 @@ export default function AddVetForm() {
     setSelectedSpecies(values);
     setVetData((prevData) => ({
       ...prevData,
+      vetSpecies: values.map((option) => ({
+        idSpecie: option.value,
+      })),
+    }));
+  };
+
+  const handleServicesChange = (event, values) => {
+    setSelectedServices(values);
+    setVetData((prevData) => ({
+      ...prevData,
       vetServices: values.map((option) => ({
         idVetService: option.value,
       })),
     }));
+  };
+  
+  const isValidPhoneNumber = (phoneNumber) => {
+    const phoneNumberRegex = /^\+?(\d{1,3})?(\d{9})$/;
+    return phoneNumberRegex.test(phoneNumber);
   };
   
   return (
@@ -321,8 +331,7 @@ export default function AddVetForm() {
                 name="vetProvince"
                 value={vetData.vetProvince}
                 onChange={handleInputChange}
-                error={vetData.vetProvince === null && vetData.submitClicked}
-                helperText={vetData.vetProvince === null && vetData.submitClicked ? 'Este campo es requerido' : ''} sx={{ mb: 2 }}
+                error={vetData.vetProvince === null && vetData.submitClicked} sx={{ mb: 2 }}
               >
                 {provinces.map((province) => (
                   <MenuItem key={province.idProvince} value={province.idProvince}>
@@ -330,6 +339,7 @@ export default function AddVetForm() {
                   </MenuItem>
                 ))}
               </Select>
+              {!vetData.vetProvince && vetData.submitClicked && <Typography variant="caption" color="error">Selecciona una provincia</Typography>}
             </FormControl>
             <FormControl fullWidth required style={{ marginBottom: '20px' }}>
               <InputLabel>Distrito</InputLabel>
@@ -337,8 +347,7 @@ export default function AddVetForm() {
                 name="vetDistrict"
                 value={vetData.vetDistrict}
                 onChange={handleInputChange}
-                error={vetData.vetDistrict === null && vetData.submitClicked}
-                helperText={vetData.vetDistrict === null && vetData.submitClicked ? 'Este campo es requerido' : ''} sx={{ mb: 2 }}
+                error={vetData.vetDistrict === null && vetData.submitClicked} sx={{ mb: 2 }}
               >
                 {districts.map((district) => (
                   <MenuItem key={district.idDistrict} value={district.idDistrict}>
@@ -346,7 +355,33 @@ export default function AddVetForm() {
                   </MenuItem>
                 ))}
               </Select>
+              {!vetData.vetDistrict && vetData.submitClicked && <Typography variant="caption" color="error">Seleccione un distrito</Typography>}
             </FormControl>
+            <Autocomplete
+              multiple
+              options={servicesOptions}
+              getOptionLabel={(option) => option.label}
+              value={selectedServices}
+              onChange={handleServicesChange}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Selecciona servicio"
+                  error={selectedServices.length === 0 && vetData.submitClicked}
+                  helperText={selectedServices.length === 0 && vetData.submitClicked ? 'Este campo es requerido' : ''}
+                  limitTags={false}
+                  sx={{ mb: 2 }}
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option.label}
+                    {...getTagProps({ index })}
+                  />
+                ))
+              } sx={{ mb: 2 }}
+            />
             <Autocomplete
               multiple
               options={speciesOptions}
@@ -356,7 +391,7 @@ export default function AddVetForm() {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Selecciona servicio"
+                  label="Selecciona especie"
                   error={selectedSpecies.length === 0 && vetData.submitClicked}
                   helperText={selectedSpecies.length === 0 && vetData.submitClicked ? 'Este campo es requerido' : ''}
                   limitTags={false}
@@ -372,17 +407,17 @@ export default function AddVetForm() {
                 ))
               } sx={{ mb: 2 }}
             />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+            <TextField
+              label="Imagen"
+              name="vetImage"
+              value={vetData.vetImage}
+              onChange={handleInputChange}
+              required
+              fullWidth
+              error={vetData.vetImage === '' && vetData.submitClicked}
+              helperText={vetData.vetImage === '' && vetData.submitClicked ? 'Este campo es requerido' : ''}
+              sx={{ mb: 2 }}
             />
-            {vetData.vetImage && (
-              <ImagePreview imageUrl={vetData.vetImage} />
-            )}
-            {vetData.vetImage === null && vetData.submitClicked && (
-              <div style={{ color: 'red' }}>Por favor, selecciona una imagen.</div>
-            )}
           </Box>
         </DialogContent>
         <DialogActions>
