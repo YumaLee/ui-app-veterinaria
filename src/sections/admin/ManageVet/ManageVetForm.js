@@ -1,51 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Typography, Grid, Card, CardMedia, CardContent, Box, Rating, TextField, Pagination, Container } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { styled } from '@mui/system';
 
-const veterinarias = [
-  {
-    id: 1,
-    name: 'Veterinaria A',
-    image: '/assets/images/vets/vet_1.jpg',
-    rating: 4.5,
-    description: 'Esta es una descripción de la veterinaria A.',
-  },
-  {
-    id: 2,
-    name: 'Veterinaria B',
-    image: '/assets/images/vets/vet_1.jpg',
-    rating: 3.2,
-    description: 'Esta es una descripción de la veterinaria B.',
-  },
-  {
-    id: 3,
-    name: 'Veterinaria C',
-    image: '/assets/images/vets/vet_1.jpg',
-    rating: 2.2,
-    description: 'Esta es una descripción de la veterinaria C.',
-  },
-  {
-    id: 4,
-    name: 'Veterinaria D',
-    image: '/assets/images/vets/vet_1.jpg',
-    rating: 1.2,
-    description: 'Esta es una descripción de la veterinaria D.',
-  },
-  // Agrega más objetos de veterinarias según necesites
-];
+const LoadingContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '300px',
+  width: '100%'
+}));
 
-export default function AdminVetForm () {
-  
+const CustomLoader = styled(CircularProgress)(({ theme }) => ({
+  color: theme.palette.secondary.main,
+}));
+
+export default function AdminVetForm() {
+  const [veterinarias, setVeterinarias] = useState([]);
   const [selectedVeterinaria, setSelectedVeterinaria] = useState(null);
-
-  const handleVeterinariaClick = (veterinaria) => {
-    setSelectedVeterinaria(veterinaria.id);
-    const seleccionado=`seleccionado: ${veterinaria.id}`;
-    alert(seleccionado)
-  };
-
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(3);
+  const [itemsPerPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.post('https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/vets/find-all', {
+          page: currentPage,
+          size: itemsPerPage
+        });
+        const { items, totalPages } = response.data;
+        setVeterinarias(items);
+        setTotalPages(totalPages);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching veterinarias:', error);
+        setIsLoading(false);
+      }
+
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    };
+
+    fetchData();
+  }, [currentPage, itemsPerPage]);
+
+  const handleVeterinariaClick = (veterinaria) => {
+    setSelectedVeterinaria(veterinaria.idVet);
+    const seleccionado = `Seleccionado: ${veterinaria.idVet}`;
+    alert(seleccionado);
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -56,17 +67,9 @@ export default function AdminVetForm () {
     veterinaria.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalItems = filteredVeterinarias.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVeterinarias = filteredVeterinarias.slice(startIndex, endIndex);
-  
 
   return (
     <Container>
@@ -79,47 +82,43 @@ export default function AdminVetForm () {
         margin="normal"
       />
       <Grid container spacing={2}>
-        {currentVeterinarias.map((veterinaria) => (
-          <Grid item xs={12} sm={6} md={4} key={veterinaria.id}>
+      {isLoading ? (
+          <LoadingContainer>
+            <CustomLoader size={60} thickness={5} />
+          </LoadingContainer>
+        ) : (
+          filteredVeterinarias.map((veterinaria) => (
+          <Grid item xs={12} sm={6} md={4} key={veterinaria.idVet}>
             <Card
               onClick={() => handleVeterinariaClick(veterinaria)}
               sx={{
                 cursor: 'pointer',
-                boxShadow: selectedVeterinaria === veterinaria.id ? '0 0 5px 2px rgba(0, 0, 0, 0.2)' : 'none',
+                boxShadow: selectedVeterinaria === veterinaria.idVet ? '0 0 5px 2px rgba(0, 0, 0, 0.2)' : 'none',
               }}
             >
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={veterinaria.image}
-                  alt={veterinaria.name}
-                />
-                <CardContent>
-                  <Box display="flex" justifyContent="center" alignItems="center" mb={1}>
-                    <Typography variant="h6" component="span" style={{ marginRight: '10px' }}>
-                      {veterinaria.name}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" mb={1}>
-                    <Rating value={veterinaria.rating} precision={0.5} readOnly />
-                  </Box>
-                  <Typography variant="body1" color="textSecondary">
-                    {veterinaria.description}
+              <CardMedia component="img" height="200" image={veterinaria.imageUrl} alt={veterinaria.name} />
+              <CardContent>
+                <Box display="flex" justifyContent="center" alignItems="center" mb={1}>
+                  <Typography variant="h6" component="span" style={{ marginRight: '10px' }}>
+                    {veterinaria.name}
                   </Typography>
-                </CardContent>
+                </Box>
+                <Box display="flex" alignItems="center" mb={1}>
+                  <Rating value={veterinaria.rating} precision={0.5} readOnly />
+                </Box>
+                <Typography variant="body1" color="textSecondary">
+                  {veterinaria.description}
+                </Typography>
+              </CardContent>
             </Card>
           </Grid>
-        ))}
+          ))
+        )}
       </Grid>
 
       <Box mt={3} display="flex" justifyContent="center">
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
-          color="primary"
-        />
+        <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
       </Box>
     </Container>
   );
-};
+}
