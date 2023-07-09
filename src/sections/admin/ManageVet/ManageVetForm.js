@@ -109,6 +109,9 @@ export default function AdminVetForm({ handleSelectVet }) {
                   <Rating value={veterinaria.rating} precision={0.5} readOnly />
                 </Box>
                 <Box display="flex" alignItems="center" mb={1}>
+                  {veterinaria.description}
+                </Box>
+                <Box display="flex" alignItems="center" mb={1}>
                   <Typography variant="body1" color="text.secondary">
                     Servicios: {veterinaria.vetServices.map((service) => service.name).join(', ')}
                   </Typography>
