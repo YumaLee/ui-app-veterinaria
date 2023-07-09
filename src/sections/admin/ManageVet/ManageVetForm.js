@@ -60,7 +60,6 @@ export default function AdminVetForm() {
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
   };
 
   const filteredVeterinarias = veterinarias.filter((veterinaria) =>
@@ -69,6 +68,7 @@ export default function AdminVetForm() {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+    setSearchTerm('');
   };
 
   return (
