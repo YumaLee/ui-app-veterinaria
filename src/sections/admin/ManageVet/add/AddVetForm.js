@@ -7,7 +7,7 @@ import Iconify from '../../../../components/iconify';
 
 export const ERP = "https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/";
 
-export default function AddVetForm() {
+export default function AddVetForm({ selectedVetId, onClose }) {
   const [open, setOpen] = useState(false);
   const [speciesOptions, setSpeciesOptions] = useState([]);
   const [selectedSpecies, setSelectedSpecies] = useState([]);
@@ -70,9 +70,51 @@ export default function AddVetForm() {
       }
     };
 
+    if (selectedVetId) {
+      const fetchVetData = async () => {
+        try {
+          const response = await axios.get(`${ERP}vets/${selectedVetId}`);
+          const vet = response.data;
+
+          console.log(JSON.stringify(vet));
+
+          const vetServicesData = vet.vetServices.map((service) => ({
+            label: service.name,
+            value: service.idVetService,
+          }));
+          const speciesData = vet.species.map((specie) => ({
+            label: specie.name,
+            value: specie.idSpecie,
+          }));
+          
+          setVetData({
+            ...vetData,
+            vetName: vet.name,
+            vetAddress: vet.address,
+            vetPhone: vet.phoneNumber,
+            vetDescription: vet.description,
+            vetDistrict: vet.district.idDistrict,
+            vetProvince: vet.district.idProvince,
+            vetImage: vet.imageUrl,
+          });
+          
+          setSelectedServices(vetServicesData);
+          setSelectedSpecies(speciesData);
+
+          setOpen(true);
+        } catch (error) {
+          console.error('Error fetching vet data:', error);
+        }
+      };
+      fetchVetData();
+
+      console.log('Prueba');
+      console.log(selectedVetId);
+      console.log('Prueba');
+    }
 
     fetchProvinces();
-  }, []);
+  }, [selectedVetId]);
 
   const fetchVetRegister = async (vetData) => {
     try {
@@ -102,6 +144,63 @@ export default function AddVetForm() {
         }
     }
   };
+  
+  const fetchVetEdit = async (vetData) => {
+    try {
+      const responseUserEdit = await axios.put(`${ERP}vets`, JSON.stringify(vetData), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if(responseUserEdit.status === 200){
+        sweetAlert('Editar Veterinaria', 'Veterinaria Editada. La veterinaria se ha guardado correctamente.', 'success');
+        // Limpiar el formulario
+        cleanForm();
+      } else {
+        sweetAlert('Editar Veterinaria', 'No se ha podido guardar su información', 'warning');
+      }
+    } catch (error) {
+        // Manejar errores
+        const errorMessage = error.response.data;
+
+        if (error.response && error.response.status === 409) {
+          // El código de estado de la respuesta es 409 (Conflict)
+          sweetAlert('Editar Veterinaria', errorMessage.detail, 'error');
+        } else {
+          // Maneja otros errores de red u otras excepciones aquí
+          sweetAlert('Editar Veterinaria', errorMessage.title, 'error');
+        }
+    }
+  };
+
+  const toggleActiveVet = async (vetId) => {
+    const url = `https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/vets/toggle-active/${vetId}`;
+  
+    try {
+      const response = await axios.put(url);
+
+      if(response.status === 200){
+        sweetAlert('Eliminar Veterinaria', 'Veterinaria Eliminada.', 'success');
+        // Limpiar el formulario
+        cleanForm();
+      } else {
+        sweetAlert('Eliminar Veterinaria', 'No se ha podido guardar su información', 'warning');
+      }
+    } catch (error) {
+      // Manejar errores
+      const errorMessage = error.response.data;
+
+      if (error.response && error.response.status === 409) {
+        // El código de estado de la respuesta es 409 (Conflict)
+        sweetAlert('Eliminar Veterinaria', errorMessage.detail, 'error');
+      } else {
+        // Maneja otros errores de red u otras excepciones aquí
+        sweetAlert('Eliminar Veterinaria', errorMessage.title, 'error');
+      }
+    }
+  };
+  
 
   const SweetAlertMessage = (title, type) => {
     return Swal.fire({
@@ -146,11 +245,14 @@ export default function AddVetForm() {
   });
 
   const handleOpen = () => {
+    cleanForm();
     setOpen(true);
   };
-
+  
   const handleClose = () => {
-    cleanForm();
+    setOpen(false);
+    selectedVetId = 0;
+    onClose();
   };
 
   const handleInputChange = (event) => {
@@ -199,6 +301,7 @@ export default function AddVetForm() {
     }));
 
     const vetsData = {
+      "idVet": selectedVetId,
       "name": vetData.vetName,
       "description": vetData.vetDescription,
       "address": vetData.vetAddress,
@@ -211,12 +314,35 @@ export default function AddVetForm() {
       }
     };
 
-    SweetAlertMessage('Registrar Veterinaria', 'Registrar').then((result) => {
+    SweetAlertMessage(`${selectedVetId > 0 ? 'Editar' : 'Registrar'} Veterinaria`, `${selectedVetId > 0 ? 'Editar' : 'Registrar'}`).then((result) => {
       if (result.dismiss === Swal.DismissReason.close) {
         // Código para manejar el cierre del diálogo
       } else if (result.isConfirmed) {
         // Código para manejar el clic en "Aceptar"
-        fetchVetRegister(vetsData);
+        if(selectedVetId > 0){
+          fetchVetEdit(vetsData);
+        } else{
+          fetchVetRegister(vetsData);
+        }
+        handleClose();
+      } else if (result.isDenied) {
+        // Código para manejar el clic en "Cancelar"
+      }
+    });
+    
+  };
+
+  const handleDelete = () => {
+    console.log(selectedVetId);
+    const id = selectedVetId;
+
+    SweetAlertMessage('Eliminar Veterinaria', 'Eliminar').then((result) => {
+      if (result.dismiss === Swal.DismissReason.close) {
+        // Código para manejar el cierre del diálogo
+      } else if (result.isConfirmed) {
+        // Código para manejar el clic en "Aceptar"
+        toggleActiveVet(id);
+        handleClose();
       } else if (result.isDenied) {
         // Código para manejar el clic en "Cancelar"
       }
@@ -235,24 +361,34 @@ export default function AddVetForm() {
       submitClicked: false,
     });
     setSelectedSpecies([]);
-    setOpen(false);
+    setSelectedServices([]);
   }
-  
+
   const handleSpeciesChange = (event, values) => {
-    setSelectedSpecies(values);
+    // Filtrar las opciones seleccionadas para evitar duplicados
+    const uniqueValues = values.filter((value, index, self) => {
+      return self.findIndex((v) => v.value === value.value) === index;
+    });
+  
+    setSelectedSpecies(uniqueValues);
     setVetData((prevData) => ({
       ...prevData,
-      vetSpecies: values.map((option) => ({
+      vetSpecies: uniqueValues.map((option) => ({
         idSpecie: option.value,
       })),
     }));
   };
 
   const handleServicesChange = (event, values) => {
-    setSelectedServices(values);
+    // Filtrar las opciones seleccionadas para evitar duplicados
+    const uniqueValues = values.filter((value, index, self) => {
+      return self.findIndex((v) => v.value === value.value) === index;
+    });
+  
+    setSelectedServices(uniqueValues);
     setVetData((prevData) => ({
       ...prevData,
-      vetServices: values.map((option) => ({
+      vetServices: uniqueValues.map((option) => ({
         idVetService: option.value,
       })),
     }));
@@ -269,15 +405,9 @@ export default function AddVetForm() {
         <Button onClick={handleOpen} variant="contained" color='primary' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:plus-fill" />}>
           Nuevo
         </Button>
-        <Button variant="contained" color='warning' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:edit-fill" />}>
-          Modificar
-        </Button>
-        <Button variant="contained" color='error' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:trash-fill" />}>
-          Eliminar
-        </Button>
       </Box>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Agregar veterinaria</DialogTitle>
+        <DialogTitle>{selectedVetId > 0 ? 'Editar' : 'Agregar'} veterinaria</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2 }}>
             <TextField
@@ -421,8 +551,16 @@ export default function AddVetForm() {
           </Box>
         </DialogContent>
         <DialogActions>
+        {selectedVetId > 0 && (
+          <Button onClick={handleDelete} variant="contained" color='error' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:trash-fill" />}>
+            Eliminar
+          </Button>
+        )}
+          <Box sx={{ flexGrow: 1 }} />
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>Guardar</Button>
+          <Button onClick={handleSubmit} variant="contained" color='info' sx={{ m: '0.25rem' }} startIcon={<Iconify icon="eva:save-fill" />}>
+          Guardar
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

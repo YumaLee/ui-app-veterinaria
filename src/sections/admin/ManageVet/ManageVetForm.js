@@ -16,7 +16,7 @@ const CustomLoader = styled(CircularProgress)(({ theme }) => ({
   color: theme.palette.secondary.main,
 }));
 
-export default function AdminVetForm() {
+export default function AdminVetForm({ handleSelectVet }) {
   const [veterinarias, setVeterinarias] = useState([]);
   const [selectedVeterinaria, setSelectedVeterinaria] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,40 +24,34 @@ export default function AdminVetForm() {
   const [itemsPerPage] = useState(3);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.post('https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/vets/find-all', {
-          page: currentPage,
-          size: itemsPerPage
-        });
-        const { items, totalPages } = response.data;
-        setVeterinarias(items);
-        setTotalPages(totalPages);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching veterinarias:', error);
-        setIsLoading(false);
-      }
-
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
   
-      return () => clearTimeout(timer);
-    };
+  const fetchVets = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post('https://lpwi1gf1y1.execute-api.us-east-1.amazonaws.com/dev/v1/vets/find-all', {
+        page: currentPage,
+        size: itemsPerPage
+      });
+      const { items, totalPages } = response.data;
+      setVeterinarias(items);
+      setTotalPages(totalPages);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching veterinarias:', error);
+      setIsLoading(false);
+    }
 
-    fetchData();
-  }, [currentPage, itemsPerPage]);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
-  const handleVeterinariaClick = (veterinaria) => {
-    setSelectedVeterinaria(veterinaria.idVet);
-    const seleccionado = `Seleccionado: ${veterinaria.idVet}`;
-    alert(seleccionado);
+    return () => clearTimeout(timer);
   };
 
+  useEffect(() => {
+    fetchVets();
+  }, [currentPage, itemsPerPage]);
+  
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -69,6 +63,11 @@ export default function AdminVetForm() {
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
     setSearchTerm('');
+  };
+
+  const handleVeterinariaClick = (veterinaria) => {
+    setSelectedVeterinaria(veterinaria.idVet);
+    handleSelectVet(veterinaria.idVet);
   };
 
   return (

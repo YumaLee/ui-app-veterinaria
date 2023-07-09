@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
@@ -15,6 +15,24 @@ export default function AdminManageVetPage() {
     console.log(veterinariaData);
   };
 
+  const [selectedVetId, setSelectedVetId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSelectVet = (id) => {
+    setSelectedVetId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setSelectedVetId(null);
+    }
+  }, [isModalOpen]);
+
   return (
     <>
       <Helmet>
@@ -27,11 +45,11 @@ export default function AdminManageVetPage() {
           Veterinarias
           </Typography>
           {/* Modal para agregar veterinaria */}
-          <AddVeterinariaModal  />
+          <AddVeterinariaModal selectedVetId={selectedVetId} onClose={handleCloseModal} />
         </Stack>
 
         <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="flex-end" sx={{ mb: 5 }}>
-            <AdminVetForm />
+            <AdminVetForm handleSelectVet={handleSelectVet} />
         </Stack>
       </Container>
     </>
