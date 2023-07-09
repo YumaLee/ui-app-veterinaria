@@ -80,6 +80,9 @@ export default function AdminVetForm({ handleSelectVet }) {
         fullWidth
         margin="normal"
       />
+      <Box mt={3} display="flex" justifyContent="center" mb={3}>
+        <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
+      </Box>
       <Grid container spacing={2}>
       {isLoading ? (
           <LoadingContainer>
@@ -105,19 +108,22 @@ export default function AdminVetForm({ handleSelectVet }) {
                 <Box display="flex" alignItems="center" mb={1}>
                   <Rating value={veterinaria.rating} precision={0.5} readOnly />
                 </Box>
-                <Typography variant="body1" color="textSecondary">
-                  {veterinaria.description}
-                </Typography>
+                <Box display="flex" alignItems="center" mb={1}>
+                  <Typography variant="body1" color="text.secondary">
+                    Servicios: {veterinaria.vetServices.map((service) => service.name).join(', ')}
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" mb={1}>
+                  <Typography variant="body1" color="text.secondary">
+                    Especies: {veterinaria.species.map((specie) => specie.name).join(', ')}
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
           ))
         )}
       </Grid>
-
-      <Box mt={3} display="flex" justifyContent="center">
-        <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
-      </Box>
     </Container>
   );
 }
